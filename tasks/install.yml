@@ -1,0 +1,114 @@
+---
+- name: Check if previous deployment exists
+  stat:
+    path: "{{ deploy_directory }}"
+  register: previous_deployment
+
+- name: Ensure backup directory exists
+  file:
+    path: "{{ backup_directory }}"
+    state: directory
+
+- name: Backup previous deployment
+  archive:
+    path: "{{ deploy_directory }}"
+    dest: "{{ backup_directory }}/{{ lookup('pipe','date +%Y-%m-%d_%H-%M-%S') }}.tgz"
+  changed_when: false
+  when: previous_deployment.stat.exists
+
+- name: Clone / update the repository
+  git:
+    repo: 'https://github.com/sc2pte/sc2-api-service.git'
+    dest: '{{ deploy_directory }}'
+    depth: 1
+    force: true
+
+- name: Set environment variables
+  lineinfile:
+    dest: /etc/environment
+    regexp: "^{{ item.name }}="
+    line: "{{ item.name }}={{ item.value }}"
+    state: present
+  with_items:
+    - name: "NODE_ENV"
+      value: "{{ NODE_ENV }}"
+    - name: "SAS_NODE_PORT"
+      value: "{{ SAS_NODE_PORT }}"
+    - name: "SAS_REDIS_ENABLE"
+      value: "{{ SAS_REDIS_ENABLE }}"
+    - name: "SAS_REDIS_HOST"
+      value: "{{ SAS_REDIS_HOST }}"
+    - name: "SAS_NODE_PORT"
+      value: "{{ SAS_NODE_PORT }}"
+    - name: "SAS_REDIS_ENABLE"
+      value: "{{ SAS_REDIS_ENABLE }}"
+    - name: "SAS_REDIS_HOST"
+      value: "{{ SAS_REDIS_HOST }}"
+    - name: "SAS_REDIS_PORT"
+      value: "{{ SAS_REDIS_PORT }}"
+    - name: "SAS_REDIS_PASSWORD"
+      value: "{{ SAS_REDIS_PASSWORD }}"
+    - name: "SAS_REDIS_TTL"
+      value: "{{ SAS_REDIS_TTL }}"
+    - name: SAS_REDIS_STATIC_TTL
+      value: "{{ SAS_REDIS_STATIC_TTL }}"
+    - name: SAS_REDIS_METADATA_TTL
+      value: "{{ SAS_REDIS_METADATA_TTL }}"
+    - name: SAS_REDIS_PROFILE_TTL
+      value: "{{ SAS_REDIS_PROFILE_TTL }}"
+    - name: SAS_REDIS_LADDER_SUMMARY_TTL
+      value: "{{ SAS_REDIS_LADDER_SUMMARY_TTL }}"
+    - name: SAS_REDIS_LADDER_TTL
+      value: "{{ SAS_REDIS_LADDER_TTL }}"
+    - name: SAS_REDIS_GRANDMASTER_LEADERBOARD_TTL
+      value: "{{ SAS_REDIS_GRANDMASTER_LEADERBOARD_TTL }}"
+    - name: SAS_REDIS_SEASON_TTL
+      value: "{{ SAS_REDIS_SEASON_TTL }}"
+    - name: SAS_REDIS_LEAGUE_TTL
+      value: "{{ SAS_REDIS_LEAGUE_TTL }}"
+    - name: SAS_REDIS_LEGACY_PROFILE_TTL
+      value: "{{ SAS_REDIS_LEGACY_PROFILE_TTL }}"
+    - name: SAS_REDIS_LEGACY_LADDERS_TTL
+      value: "{{ SAS_REDIS_LEGACY_LADDERS_TTL }}"
+    - name: SAS_REDIS_LEGACY_MATCH_HISTORY_TTL
+      value: "{{ SAS_REDIS_LEGACY_MATCH_HISTORY_TTL }}"
+    - name: SAS_REDIS_LEGACY_LADDER_TTL
+      value: "{{ SAS_REDIS_LEGACY_LADDER_TTL }}"
+    - name: SAS_REDIS_LEGACY_ACHIEVEMENTS_TTL
+      value: "{{ SAS_REDIS_LEGACY_ACHIEVEMENTS_TTL }}"
+    - name: SAS_REDIS_LEGACY_REWARDS_TTL
+      value: "{{ SAS_REDIS_LEGACY_REWARDS_TTL }}"
+    - name: "SAS_REDIS_DB"
+      value: "{{ SAS_REDIS_DB }}"
+    - name: "SAS_REDIS_CACHE_SEGMENT"
+      value: "{{ SAS_REDIS_CACHE_SEGMENT }}"
+    - name: "SAS_BAS_URL"
+      value: "{{ SAS_BAS_URL }}"
+    - name: "SAS_BAS_ACCESS_TOKEN_ENDPOINT"
+      value: "{{ SAS_BAS_ACCESS_TOKEN_ENDPOINT }}"
+    - name: "SAS_BAS_ACCESS_TOKEN_ENDPOINT"
+      value: "{{ SAS_BAS_ACCESS_TOKEN_ENDPOINT }}"
+    - name: "SAS_BAS_ACCESS_TOKEN_FRESH_ENDPOINT"
+      value: "{{ SAS_BAS_ACCESS_TOKEN_FRESH_ENDPOINT }}"
+    - name: "SAS_BATTLENET_REGION"
+      value: "{{ SAS_BATTLENET_REGION }}"
+  become: true
+
+- name: Remove node_modules directory
+  file:
+    path: '{{ deploy_directory }}/node_modules'
+    state: absent
+
+- name: Install packages
+  npm:
+    path: '{{ deploy_directory }}'
+
+- name: Build project
+  command: 'npm run build --prefix {{ deploy_directory }}'
+
+- name: Delete running project instance from pm2
+  command: 'pm2 delete sc2-api-service'
+  failed_when: false
+
+- name: Start project in pm2
+  command: 'pm2 start {{ deploy_directory }}/scripts/start.js -i max --name sc2-api-service --watch --update-env -f'
