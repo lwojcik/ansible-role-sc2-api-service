@@ -1,4 +1,4 @@
-# ansible-role-bnet-auth-service
+# ansible-role-sc2-api-service
 
 Ansible role for installing and launching [sc2-api-service](https://github.com/sc2pte/sc2-api-service) instance on Debian-based server.
 
