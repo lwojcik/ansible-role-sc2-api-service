@@ -10,7 +10,7 @@ It builds the app from Git repository and generates backup of the previous deplo
 
 | Variable name | Sample value | Description |
 |-  |-  |-
-| `deploy_directory` | `/home/deploy/sc2-api-service` | Directory used to deploy project |
-| `backup_directory` | `/home/deploy/backups/sc2-api-service` | Directory used to generate backups of previous deployments as tgz files |
+| `sas_deploy_directory` | `/home/deploy/sc2-api-service` | Directory used to deploy project |
+| `sas_backup_directory` | `/home/deploy/backups/sc2-api-service` | Directory used to generate backups of previous deployments as tgz files |
 
 For project-specific environment variables, see [tasks/install.yml](https://github.com/sc2pte/ansible-role-sc2-api-service/blob/master/tasks/install.yml#L26).
