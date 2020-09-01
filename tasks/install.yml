@@ -11,25 +11,25 @@
   stat:
     path: "{{ sas_deploy_directory }}"
   register: sas_previous_deployment
-  when: sas_git_clone.changed
+  when: force_deploy or sas_git_clone.changed
 
 - name: Ensure backup directory exists
   file:
     path: "{{ sas_backup_directory }}"
     state: directory
-  when: sas_git_clone.changed
+  when: force_deploy or sas_git_clone.changed
 
 - name: Backup previous deployment
   archive:
     path: "{{ sas_deploy_directory }}"
     dest: "{{ sas_backup_directory }}/{{ lookup('pipe','date +%Y-%m-%d_%H-%M-%S') }}.tgz"
   changed_when: false
-  when: sas_git_clone.changed and sas_previous_deployment.stat.exists
+  when: force_deploy or sas_git_clone.changed and sas_previous_deployment.stat.exists
 
 - name: Stop running project instance in pm2
   command: 'pm2 stop sc2-api-service'
   failed_when: false
-  when: sas_git_clone.changed
+  when: force_deploy or sas_git_clone.changed
 
 - name: Set environment variables
   lineinfile:
@@ -101,28 +101,28 @@
     - name: "SAS_BATTLENET_REGION"
       value: "{{ SAS_BATTLENET_REGION }}"
   become: true
-  when: sas_git_clone.changed
+  when: force_deploy or sas_git_clone.changed
 
 - name: Remove node_modules directory
   file:
     path: '{{ sas_deploy_directory }}/node_modules'
     state: absent
-  when: sas_git_clone.changed
+  when: force_deploy or sas_git_clone.changed
 
 - name: Install packages
   npm:
     path: '{{ sas_deploy_directory }}'
-  when: sas_git_clone.changed
+  when: force_deploy or sas_git_clone.changed
 
 - name: Build project
   command: 'npm run build --prefix {{ sas_deploy_directory }}'
-  when: sas_git_clone.changed
+  when: force_deploy or sas_git_clone.changed
 
 - name: Delete running project instance from pm2
   command: 'pm2 delete sc2-api-service'
   failed_when: false
-  when: sas_git_clone.changed
+  when: force_deploy or sas_git_clone.changed
 
 - name: Start project in pm2
   command: 'pm2 start {{ sas_deploy_directory }}/scripts/start.js -i max --name sc2-api-service --watch --update-env -f'
-  when: sas_git_clone.changed
+  when: force_deploy or sas_git_clone.changed
