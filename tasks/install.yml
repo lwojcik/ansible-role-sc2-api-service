@@ -56,7 +56,7 @@
       value: "{{ SAS_REDIS_PORT }}"
     - name: "SAS_REDIS_PASSWORD"
       value: "{{ SAS_REDIS_PASSWORD }}"
-    - name: SAS_REDIS_STATIC_TTL_SECS_SECS
+    - name: SAS_REDIS_STATIC_TTL_SECS
       value: "{{ SAS_REDIS_STATIC_TTL_SECS }}"
     - name: SAS_REDIS_METADATA_TTL_SECS
       value: "{{ SAS_REDIS_METADATA_TTL_SECS }}"
@@ -96,8 +96,8 @@
       value: "{{ SAS_BAS_ACCESS_TOKEN_ENDPOINT }}"
     - name: "SAS_BAS_ACCESS_TOKEN_FRESH_ENDPOINT"
       value: "{{ SAS_BAS_ACCESS_TOKEN_FRESH_ENDPOINT }}"
-    - name: "SAS_BATTL_SECSENET_REGION"
-      value: "{{ SAS_BATTL_SECSENET_REGION }}"
+    - name: "SAS_BATTLENET_REGION"
+      value: "{{ SAS_BATTLENET_REGION }}"
   become: true
   when: force_deploy is defined and force_deploy == True or sas_git_clone.changed
 
