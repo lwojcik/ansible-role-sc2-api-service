@@ -92,8 +92,6 @@
       value: "{{ SAS_BAS_URL }}"
     - name: "SAS_BAS_ACCESS_TOKEN_ENDPOINT"
       value: "{{ SAS_BAS_ACCESS_TOKEN_ENDPOINT }}"
-    - name: "SAS_BAS_ACCESS_TOKEN_ENDPOINT"
-      value: "{{ SAS_BAS_ACCESS_TOKEN_ENDPOINT }}"
     - name: "SAS_BAS_ACCESS_TOKEN_FRESH_ENDPOINT"
       value: "{{ SAS_BAS_ACCESS_TOKEN_FRESH_ENDPOINT }}"
     - name: "SAS_BATTLENET_REGION"
